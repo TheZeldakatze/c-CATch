@@ -7,7 +7,7 @@
 #include "pidgin_image.h"
 #include "catch.h"
 
-static int animation_index = 0, ax = 1;
+static int animation_index = 0, delay, ax = 1;
 static SDL_Rect sdl_rect_output, sdl_rect_source;
 static SDL_Surface* image_pidgin;
 
@@ -29,8 +29,13 @@ void draw_Pidgin(SDL_Surface* surface, int x, int y) {
 }
 
 void Pidgin_IncrementFrame() {
-	animation_index+=ax;
-	sdl_rect_source.y = animation_index * PIDGIN_HEIGHT;
-	if(animation_index > 1) ax = -1;
-	if(animation_index < 1) ax = 1;
+	delay++;
+	//printf("%d\n", delay);
+	if(delay >= 50) {
+		delay = 0;
+		animation_index+=ax;
+		sdl_rect_source.y = animation_index * PIDGIN_HEIGHT;
+		if(animation_index > 1) ax = -1;
+		if(animation_index < 1) ax = 1;
+	}
 }

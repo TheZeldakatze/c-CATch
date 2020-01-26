@@ -40,12 +40,14 @@ struct Cat {
 };
 
 struct Bird {
-	int x, y;
+	float x;
+	int y;
 	unsigned char type;
 };
 
 // function predefines
 extern void gameRoutine();
+extern bool checkCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2);
 
 // BitmapFontRenderer.c
 extern void Font_Init();
