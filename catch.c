@@ -19,7 +19,7 @@ SDL_Surface* image_chargebar, *image_chargebar_dark, *image_cat, *image_bird;
 struct Cat cat;
 struct Bird bird[BIRD_COUNT];
 
-int state, menu_state;
+int state, menu_state, score;
 
 int main(int argc, char* argv[]) {
 	memset(keyPressed,0,sizeof(keyPressed));
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// create a window
-	screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF | SDL_FULLSCREEN);
+	screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF/* | SDL_FULLSCREEN*/);
 	if(!screen) {
 		printf("Could not create a SDL window! Error: %s", SDL_GetError());
 		return -1;
@@ -119,8 +119,13 @@ int main(int argc, char* argv[]) {
 			// draw the birds
 			Pidgin_IncrementFrame();
 			for(int i = 0; i<BIRD_COUNT; i++) {
-				if(bird[i].type != BIRD_TYPE_NONE) {
+				if(bird[i].type == BIRD_TYPE_PIDGIN) {
 					draw_Pidgin(screen, bird[i].x, bird[i].y);
+				}
+				else if(bird[i].type == BIRD_TYPE_DEAD_PIDGIN) {
+					sdl_rect.x = bird[i].x;
+					sdl_rect.y = bird[i].y;
+					SDL_BlitSurface(image_pidgin_dead, 0, screen, &sdl_rect);
 				}
 			}
 
@@ -222,6 +227,7 @@ void gameRoutine() {
 		if(keyPressed[SDLK_RETURN]) {
 			keyPressed[SDLK_RETURN] = false; // reset the key
 			if(menu_state == 0) { // start button
+				score = 0;
 				state = STATE_GAME;
 			}
 			else
@@ -237,7 +243,7 @@ void gameRoutine() {
 		for(int i = 0; i<BIRD_COUNT; i++) {
 
 			// if the selected bird exists, move it
-			if(bird[i].type != BIRD_TYPE_NONE) {
+			if(bird[i].type == BIRD_TYPE_PIDGIN) {
 				bird[i].x+=0.5;
 
 				// if the bird left the screen, reset it
@@ -248,14 +254,22 @@ void gameRoutine() {
 
 					// check if the bird collided with the cat
 					if(checkCollision(cat.x, cat.y, image_cat->w, image_cat->h, bird[i].x, bird[i].y, image_cat->w, image_cat->h)) {
-						bird[i].type = BIRD_TYPE_NONE;
+						bird[i].type = BIRD_TYPE_DEAD_PIDGIN;
 					}
 				}
+
+			} else if(bird[i].type == BIRD_TYPE_DEAD_PIDGIN) {
+				bird[i].y+=0.5;
+
+				if(bird[i].y > screen->h-FLOOR_HEIGHT) {
+					bird[i].type = BIRD_TYPE_NONE;
+				}
+
 			} else {
 				// there should be a 1 in 10 chance for a bird to spawn
 				if(getRandomInt(10) == 1) {
-					bird[i].x = -100 + getRandomInt(50);
-					bird[i].y = 10 + getRandomInt(screen->h - FLOOR_HEIGHT - 20);
+					bird[i].x = -150 + getRandomInt(100);
+					bird[i].y = 10 + getRandomInt(screen->h - FLOOR_HEIGHT - 40);
 					bird[i].type = BIRD_TYPE_PIDGIN;
 				}
 			}

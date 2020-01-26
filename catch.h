@@ -26,6 +26,7 @@
 #define BIRD_COUNT 3
 #define BIRD_TYPE_NONE 0
 #define BIRD_TYPE_PIDGIN 1
+#define BIRD_TYPE_DEAD_PIDGIN 2
 
 #define STATE_MAIN_MENU 1
 #define STATE_GAME 2
@@ -40,8 +41,7 @@ struct Cat {
 };
 
 struct Bird {
-	float x;
-	int y;
+	float x, y;
 	unsigned char type;
 };
 
@@ -54,6 +54,7 @@ extern void Font_Init();
 extern void Font_DrawString(SDL_Surface* surface, int x, int y, char* string);
 
 // pidginImage.c
+extern SDL_Surface* image_pidgin_dead;
 extern void Pidgin_Init();
 extern void draw_Pidgin(SDL_Surface* surface, int x, int y);
 extern void Pidgin_IncrementFrame();

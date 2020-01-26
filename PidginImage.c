@@ -10,12 +10,15 @@
 static int animation_index = 0, delay, ax = 1;
 static SDL_Rect sdl_rect_output, sdl_rect_source;
 static SDL_Surface* image_pidgin;
+SDL_Surface* image_pidgin_dead;
 
 void Pidgin_Init() {
 	SDL_RWops* rwops = SDL_RWFromConstMem(pidgin_bmp, sizeof(pidgin_bmp) / sizeof(char));
 	image_pidgin = SDL_LoadBMP_RW(rwops,1);
 	SDL_SetColorKey(image_pidgin, SDL_SRCCOLORKEY, SDL_MapRGB(image_pidgin->format, 255, 0, 255));
-	//SDL_FreeRW(rwops);
+	rwops = SDL_RWFromConstMem(pidgin_dead_bmp, sizeof(pidgin_dead_bmp) / sizeof(char));
+	image_pidgin_dead = SDL_LoadBMP_RW(rwops,1);
+	SDL_SetColorKey(image_pidgin_dead, SDL_SRCCOLORKEY, SDL_MapRGB(image_pidgin->format, 255, 0, 255));
 
 	sdl_rect_source.x = 0;
 	sdl_rect_source.w = PIDGIN_WIDTH;
