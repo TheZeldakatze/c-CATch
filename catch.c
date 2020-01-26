@@ -60,6 +60,8 @@ int main(int argc, char* argv[]) {
 	run = true;
 	state = 1;
 	while(run) {
+		long deltaTime = clock();
+
 		// process all sdl events
 		SDL_Event event;
 		while(SDL_PollEvent(&event)) {
@@ -169,6 +171,13 @@ int main(int argc, char* argv[]) {
 				SDL_BlitSurface(image_chargebar_dark, &sdl_rect, screen, &sdl_rect2);
 				sdl_rect2.y++;
 			}
+
+			// draw the score
+			char score_s[50]; // TODO this could create a buffer overflow
+			sprintf(score_s, "SCORE0: %d", score);
+			int length = strlen(score_s) + 1;
+			Font_DrawString(screen, screen->w - length * 8, 5, score_s);
+
 		}
 
 		//Font_DrawString(screen, 0,5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstufwxyz\n 01234567890: +");
@@ -177,8 +186,13 @@ int main(int argc, char* argv[]) {
 		// draw the screen
 		SDL_Flip(screen);
 
+		// get the delta time
+		deltaTime = clock() - deltaTime;
+		deltaTime /= CLOCKS_PER_SEC / 1000;
+		deltaTime = 50 - deltaTime;
 		// wait 50 milliseconds
-		usleep(50);
+		if(deltaTime>0)
+			usleep(deltaTime);
 	}
 
 	// dispose the surfaces
@@ -193,6 +207,7 @@ int main(int argc, char* argv[]) {
 }
 
 void gameRoutine() {
+	if(keyPressed[SDLK_BACKSPACE]) state = STATE_MAIN_MENU;
 	bool charge = keyPressed[SDLK_SPACE] && (state == STATE_GAME);
 
 	// do the physics calculation
@@ -255,6 +270,7 @@ void gameRoutine() {
 					// check if the bird collided with the cat
 					if(checkCollision(cat.x, cat.y, image_cat->w, image_cat->h, bird[i].x, bird[i].y, image_cat->w, image_cat->h)) {
 						bird[i].type = BIRD_TYPE_DEAD_PIDGIN;
+						score+=10;
 					}
 				}
 
@@ -267,7 +283,7 @@ void gameRoutine() {
 
 			} else {
 				// there should be a 1 in 10 chance for a bird to spawn
-				if(getRandomInt(10) == 1) {
+				if(getRandomInt(20) == 1) {
 					bird[i].x = -150 + getRandomInt(100);
 					bird[i].y = 10 + getRandomInt(screen->h - FLOOR_HEIGHT - 40);
 					bird[i].type = BIRD_TYPE_PIDGIN;

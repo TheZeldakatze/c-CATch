@@ -772,16 +772,16 @@ void Font_DrawString(SDL_Surface* surface, int x, int y, char* string) {
 			case 'y': offset = 50; break;
 			case 'z': offset = 51; break;
 
-			case '1': offset = 51; break;
-			case '2': offset = 52; break;
-			case '3': offset = 53; break;
-			case '4': offset = 54; break;
-			case '5': offset = 55; break;
-			case '6': offset = 56; break;
-			case '7': offset = 57; break;
-			case '8': offset = 58; break;
-			case '9': offset = 59; break;
-			case '0': offset = 60; break;
+			case '1': offset = 52; break;
+			case '2': offset = 53; break;
+			case '3': offset = 54; break;
+			case '4': offset = 55; break;
+			case '5': offset = 56; break;
+			case '6': offset = 57; break;
+			case '7': offset = 58; break;
+			case '8': offset = 59; break;
+			case '9': offset = 60; break;
+			case '0': offset = 61; break;
 			case ':': offset = 62; break;
 
 			case ' ': offset = -1; break;
