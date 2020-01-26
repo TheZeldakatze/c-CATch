@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "chargebar.h"
 #include "cat_bmp.h"
@@ -24,7 +25,7 @@
 
 #define BIRD_COUNT 3
 #define BIRD_TYPE_NONE 0
-#define BIRD_TYPE_BIRD 1
+#define BIRD_TYPE_PIDGIN 1
 
 #define STATE_MAIN_MENU 1
 #define STATE_GAME 2
@@ -49,3 +50,8 @@ extern void gameRoutine();
 // BitmapFontRenderer.c
 extern void Font_Init();
 extern void Font_DrawString(SDL_Surface* surface, int x, int y, char* string);
+
+// pidginImage.c
+extern void Pidgin_Init();
+extern void draw_Pidgin(SDL_Surface* surface, int x, int y);
+extern void Pidgin_IncrementFrame();

@@ -713,7 +713,6 @@ void Font_DrawString(SDL_Surface* surface, int x, int y, char* string) {
 	sdl_rect_output.y = y;
 
 	int length = strlen(string);
-	printf("%d\n", length);
 	for(int i = 0; i<length;i++) {
 
 		// find the offset of the letter
@@ -804,4 +803,8 @@ void Font_DrawString(SDL_Surface* surface, int x, int y, char* string) {
 		else
 			sdl_rect_output.x+=LETTER_WIDTH;
 	}
+}
+
+void Font_SetColor(unsigned char r, unsigned char g, unsigned char b) {
+
 }
