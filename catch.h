@@ -32,6 +32,10 @@
 #define STATE_MAIN_MENU 1
 #define STATE_GAME 2
 #define STATE_GAME_OVER 3
+#define GAME_TIME 60
+
+#define TICK_SPEED 50
+#define TICKS_PER_SECOND 10000 / TICK_SPEED
 
 // cat and bird structures
 struct Cat {

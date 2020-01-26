@@ -19,7 +19,7 @@ SDL_Surface* image_chargebar, *image_chargebar_dark, *image_cat, *image_bird;
 struct Cat cat;
 struct Bird bird[BIRD_COUNT];
 
-int state, menu_state, score;
+int state, menu_state, score, time_left, ticks_to_next_second;
 
 int main(int argc, char* argv[]) {
 	memset(keyPressed,0,sizeof(keyPressed));
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// create a window
-	screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF/* | SDL_FULLSCREEN*/);
+	screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF | SDL_FULLSCREEN);
 	if(!screen) {
 		printf("Could not create a SDL window! Error: %s", SDL_GetError());
 		return -1;
@@ -174,10 +174,14 @@ int main(int argc, char* argv[]) {
 
 			// draw the score
 			char score_s[50]; // TODO this could create a buffer overflow
-			sprintf(score_s, "SCORE0: %d", score);
+			sprintf(score_s, "SCORE: %d", score);
 			int length = strlen(score_s) + 1;
 			Font_DrawString(screen, screen->w - length * 8, 5, score_s);
 
+			// draw the time
+			sprintf(score_s, "TIME LEFT: %d", time_left);
+			length = strlen(score_s) + 1;
+			Font_DrawString(screen, screen->w - length * 8, 15, score_s);
 		}
 
 		//Font_DrawString(screen, 0,5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstufwxyz\n 01234567890: +");
@@ -189,7 +193,7 @@ int main(int argc, char* argv[]) {
 		// get the delta time
 		deltaTime = clock() - deltaTime;
 		deltaTime /= CLOCKS_PER_SEC / 1000;
-		deltaTime = 50 - deltaTime;
+		deltaTime = TICK_SPEED - deltaTime;
 		// wait 50 milliseconds
 		if(deltaTime>0)
 			usleep(deltaTime);
@@ -243,6 +247,10 @@ void gameRoutine() {
 			keyPressed[SDLK_RETURN] = false; // reset the key
 			if(menu_state == 0) { // start button
 				score = 0;
+				time_left = GAME_TIME;
+				ticks_to_next_second = TICKS_PER_SECOND;
+				for(int i = 0; i<BIRD_COUNT; i++)
+					bird[i].type = BIRD_TYPE_NONE;
 				state = STATE_GAME;
 			}
 			else
@@ -254,6 +262,15 @@ void gameRoutine() {
 	else
 	// move the birds in the game state
 	if(state == STATE_GAME) {
+
+		// count down
+		ticks_to_next_second--;
+		if(ticks_to_next_second < 0) {
+			ticks_to_next_second = TICKS_PER_SECOND;
+			time_left--;
+			if(time_left<0)
+				state = STATE_MAIN_MENU;
+		}
 
 		for(int i = 0; i<BIRD_COUNT; i++) {
 
