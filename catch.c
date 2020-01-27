@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// create a window
-	screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF | SDL_FULLSCREEN);
+	screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF);
 	if(!screen) {
 		printf("Could not create a SDL window! Error: %s", SDL_GetError());
 		return -1;
@@ -83,6 +83,11 @@ int main(int argc, char* argv[]) {
 		// quit if the esc key was pressed
 		if(keyPressed[SDLK_ESCAPE]) run = false;
 
+		// check if the fullscreen toogle button was hit
+		if(keyPressed[SDLK_f]) {
+			SDL_WM_ToggleFullScreen(screen);
+		}
+
 		// run the game routine
 		gameRoutine();
 
@@ -107,13 +112,14 @@ int main(int argc, char* argv[]) {
 
 		if(state == STATE_MAIN_MENU) {
 			// draw the main menu
-			sdl_rect.x = 285;
+			sdl_rect.x = screen->w/2-73;
 			sdl_rect.h = 18;
-			sdl_rect.y = 195 + menu_state * 20;
-			sdl_rect.w = 42;
+			sdl_rect.y = 175 + menu_state * 20;
+			sdl_rect.w = 146;
 			SDL_FillRect(screen,&sdl_rect,SDL_MapRGB(screen->format,204,133,0));
-			Font_DrawString(screen, 290, 200, "Play");
-			Font_DrawString(screen, 290, 220, "Quit");
+			Font_DrawString(screen, screen->w/2-16, 180, "Play");
+			Font_DrawString(screen, screen->w/2-68, 200, "Toggle Fullscreen");
+			Font_DrawString(screen, screen->w/2-16, 220, "Quit");
 		}
 		else
 		if(state == STATE_GAME) {
@@ -216,7 +222,7 @@ void gameRoutine() {
 
 	// do the physics calculation
 	if(cat.jumping) {
-		cat.downwardForce+=0.03;
+		cat.downwardForce+=0.01;
 		cat.y+=cat.downwardForce;
 
 		// the cat has touched the floor
@@ -238,10 +244,14 @@ void gameRoutine() {
 	}
 
 	if(state == STATE_MAIN_MENU) {
-		if(keyPressed[SDLK_UP] && menu_state > 0)
+		if(keyPressed[SDLK_UP] && menu_state > 0) {
 			menu_state--;
-		if(keyPressed[SDLK_DOWN] && menu_state < 1)
+			keyPressed[SDLK_UP] = false;
+		}
+		if(keyPressed[SDLK_DOWN] && menu_state < 2) {
 			menu_state++;
+			keyPressed[SDLK_DOWN] = false;
+		}
 
 		if(keyPressed[SDLK_RETURN]) {
 			keyPressed[SDLK_RETURN] = false; // reset the key
@@ -254,7 +264,11 @@ void gameRoutine() {
 				state = STATE_GAME;
 			}
 			else
-			if(menu_state == 1) { // quit button
+			if(menu_state == 1) { // toogle fullscreen button
+				SDL_WM_ToggleFullScreen(screen);
+			}
+			else
+			if(menu_state == 2) { // quit button
 				run = false;
 			}
 		}

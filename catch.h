@@ -22,7 +22,7 @@
 #define CHARGEBAR_POS_X 10
 #define CHARGEBAR_POS_Y 10
 
-#define MAXIMUM_JUMP_FORCE 5
+#define MAXIMUM_JUMP_FORCE 3
 
 #define BIRD_COUNT 3
 #define BIRD_TYPE_NONE 0
