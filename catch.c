@@ -189,6 +189,16 @@ int main(int argc, char* argv[]) {
 			length = strlen(score_s) + 1;
 			Font_DrawString(screen, screen->w - length * 8, 15, score_s);
 		}
+		else if(state == STATE_GAME_OVER) {
+			Font_DrawString(screen, screen->w/2-36, 150, "GAME OVER");
+			Font_DrawString(screen, screen->w/2-96, 200, "Press Return to continue");
+
+			// draw the score
+			char score_s[50]; // TODO this could create a buffer overflow
+			sprintf(score_s, "Score: %d", score);
+			int length = strlen(score_s) + 1;
+			Font_DrawString(screen, screen->w /2  - length * 4, 180, score_s);
+		}
 
 		//Font_DrawString(screen, 0,5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstufwxyz\n 01234567890: +");
 		Font_DrawString(screen, screen->h-10, 5, "");
@@ -217,7 +227,6 @@ int main(int argc, char* argv[]) {
 }
 
 void gameRoutine() {
-	if(keyPressed[SDLK_BACKSPACE]) state = STATE_MAIN_MENU;
 	bool charge = keyPressed[SDLK_SPACE] && (state == STATE_GAME);
 
 	// do the physics calculation
@@ -283,7 +292,7 @@ void gameRoutine() {
 			ticks_to_next_second = TICKS_PER_SECOND;
 			time_left--;
 			if(time_left<0)
-				state = STATE_MAIN_MENU;
+				state = STATE_GAME_OVER;
 		}
 
 		for(int i = 0; i<BIRD_COUNT; i++) {
@@ -320,6 +329,15 @@ void gameRoutine() {
 					bird[i].type = BIRD_TYPE_PIDGIN;
 				}
 			}
+		}
+	}
+
+	// the game over state
+	else
+	if(state == STATE_GAME_OVER) {
+		if(keyPressed[SDLK_RETURN]) {
+			state = STATE_MAIN_MENU;
+			keyPressed[SDLK_RETURN] = false;
 		}
 	}
 }

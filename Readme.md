@@ -25,6 +25,6 @@ After that you can start it by running
 ## Controls
 * Up / Down Arrows -    Change Menu Entry
 * Return           -    Select Menu Entry
-
+* F                -    Toggle Fullscreen
 * Space            - Press to charge jump
 * ESCape           -   Closes the program
