@@ -4,7 +4,12 @@
  *  Created on: 25.01.2020
  *      Author: victor
  */
+
+#ifdef WIN32
+#include <SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 #include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
@@ -34,7 +39,7 @@
 #define STATE_GAME_OVER 3
 #define GAME_TIME 10
 
-#define TICK_SPEED 50
+#define TICK_SPEED 100
 #define TICKS_PER_SECOND 10000 / TICK_SPEED
 
 // cat and bird structures
