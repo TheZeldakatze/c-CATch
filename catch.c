@@ -19,7 +19,9 @@ SDL_Surface* image_chargebar, *image_chargebar_dark, *image_cat, *image_bird;
 struct Cat cat;
 struct Bird bird[BIRD_COUNT];
 
-int state, menu_state, score, time_left, ticks_to_next_second;
+unsigned int state, menu_state, score;
+int ticks_to_next_second, time_left;
+unsigned long last_delta_time;
 
 int main(int argc, char* argv[]) {
 	memset(keyPressed,0,sizeof(keyPressed));
@@ -60,6 +62,8 @@ int main(int argc, char* argv[]) {
 	run = true;
 	state = 1;
 	while(run) {
+
+		// get the time
 		long deltaTime = clock();
 
 		// process all sdl events
@@ -200,6 +204,17 @@ int main(int argc, char* argv[]) {
 			Font_DrawString(screen, screen->w /2  - length * 4, 180, score_s);
 		}
 
+		// TODO draw the fps
+		/*
+		char fps_s[50]; // TODO this could create a buffer overflow
+		if(last_delta_time <= 0)
+			last_delta_time = 1;
+		printf("%d\n", last_delta_time);
+		sprintf(fps_s, "FPS: %ld", 1000000000 / last_delta_time);
+		int length = strlen(fps_s) + 1;
+		Font_DrawString(screen, screen->w - length * 8, 24, fps_s);
+		*/
+
 		//Font_DrawString(screen, 0,5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstufwxyz\n 01234567890: +");
 		Font_DrawString(screen, screen->h-10, 5, "");
 
@@ -207,12 +222,23 @@ int main(int argc, char* argv[]) {
 		SDL_Flip(screen);
 
 		// get the delta time
-		deltaTime = clock() - deltaTime;
-		deltaTime /= CLOCKS_PER_SEC / 1000;
-		deltaTime = TICK_SPEED - deltaTime;
-		// wait 50 milliseconds
-		if(deltaTime>0)
+		deltaTime = clock()-deltaTime;
+
+		// get the time in microseconds
+		deltaTime /= CLOCKS_PER_SEC/1000000;
+		last_delta_time = deltaTime;
+
+		// calculate the time until the next frame
+		deltaTime = TICK_SPEED * 1000 - deltaTime;
+
+		// if it is higher than 0, sleep
+		if(deltaTime > 0)
 			usleep(deltaTime);
+		//deltaTime = TICK_SPEED - deltaTime;
+		///printf("%d\n", deltaTime);
+		// wait 50 milliseconds
+
+
 	}
 
 	// dispose the surfaces
@@ -231,7 +257,7 @@ void gameRoutine() {
 
 	// do the physics calculation
 	if(cat.jumping) {
-		cat.downwardForce+=0.01;
+		cat.downwardForce+=0.1;
 		cat.y+=cat.downwardForce;
 
 		// the cat has touched the floor
@@ -248,7 +274,7 @@ void gameRoutine() {
 		}
 		else if(charge) {
 			if(cat.downwardForce > -MAXIMUM_JUMP_FORCE)
-				cat.downwardForce-=0.02;
+				cat.downwardForce-=0.2;
 		}
 	}
 
@@ -299,7 +325,7 @@ void gameRoutine() {
 
 			// if the selected bird exists, move it
 			if(bird[i].type == BIRD_TYPE_PIDGIN) {
-				bird[i].x+=0.5;
+				bird[i].x+= 1;
 
 				// if the bird left the screen, reset it
 				if(bird[i].x > screen->w) {
@@ -315,7 +341,7 @@ void gameRoutine() {
 				}
 
 			} else if(bird[i].type == BIRD_TYPE_DEAD_PIDGIN) {
-				bird[i].y+=0.5;
+				bird[i].y+= 2;
 
 				if(bird[i].y > screen->h-FLOOR_HEIGHT) {
 					bird[i].type = BIRD_TYPE_NONE;

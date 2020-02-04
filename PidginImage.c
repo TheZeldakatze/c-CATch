@@ -34,7 +34,7 @@ void draw_Pidgin(SDL_Surface* surface, int x, int y) {
 void Pidgin_IncrementFrame() {
 	delay++;
 	//printf("%d\n", delay);
-	if(delay >= 50) {
+	if(delay >= 10) {
 		delay = 0;
 		animation_index+=ax;
 		sdl_rect_source.y = animation_index * PIDGIN_HEIGHT;

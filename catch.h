@@ -27,9 +27,9 @@
 #define CHARGEBAR_POS_X 10
 #define CHARGEBAR_POS_Y 10
 
-#define MAXIMUM_JUMP_FORCE 3
+#define MAXIMUM_JUMP_FORCE 9
 
-#define BIRD_COUNT 3
+#define BIRD_COUNT 5
 #define BIRD_TYPE_NONE 0
 #define BIRD_TYPE_PIDGIN 1
 #define BIRD_TYPE_DEAD_PIDGIN 2
@@ -37,10 +37,10 @@
 #define STATE_MAIN_MENU 1
 #define STATE_GAME 2
 #define STATE_GAME_OVER 3
-#define GAME_TIME 10
+#define GAME_TIME 60
 
-#define TICK_SPEED 100
-#define TICKS_PER_SECOND 10000 / TICK_SPEED
+#define TICK_SPEED 20
+#define TICKS_PER_SECOND 1000 / TICK_SPEED
 
 // cat and bird structures
 struct Cat {
@@ -58,6 +58,7 @@ struct Bird {
 // function predefines
 extern void gameRoutine();
 extern bool checkCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2);
+extern int getRandomInt(int limit);
 
 // BitmapFontRenderer.c
 extern void Font_Init();
