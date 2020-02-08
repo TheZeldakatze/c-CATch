@@ -21,7 +21,7 @@ struct Bird bird[BIRD_COUNT];
 
 unsigned int state, menu_state, score;
 int ticks_to_next_second, time_left;
-unsigned long last_delta_time;
+unsigned long last_fps_count_time;
 
 int main(int argc, char* argv[]) {
 	memset(keyPressed,0,sizeof(keyPressed));
@@ -34,7 +34,11 @@ int main(int argc, char* argv[]) {
 	}
 
 	// create a window
-	screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF);
+	if(argc>0)
+		screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF/* | SDL_FULLSCREEN*/);
+	else
+		screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF);
+
 	if(!screen) {
 		printf("Could not create a SDL window! Error: %s", SDL_GetError());
 		return -1;
@@ -98,8 +102,8 @@ int main(int argc, char* argv[]) {
 		// draw the sky
 		sdl_rect.x = 0;
 		sdl_rect.y = 0;
-		sdl_rect.w = screen->w;
-		sdl_rect.h = screen->h-FLOOR_HEIGHT;
+		sdl_rect.w = SCREEN_WIDTH;
+		sdl_rect.h = SCREEN_HEIGHT-FLOOR_HEIGHT;
 		SDL_FillRect(screen,&sdl_rect,SDL_MapRGB(screen->format,0,0,200));
 
 		// draw the floor
@@ -108,7 +112,7 @@ int main(int argc, char* argv[]) {
 		SDL_FillRect(screen,&sdl_rect,SDL_MapRGB(screen->format,0,200,000));
 
 		// draw the cat
-		cat.x = screen->w/2 - image_cat->w/2;
+		cat.x = SCREEN_WIDTH/2 - image_cat->w/2;
 		sdl_rect.x = cat.x;
 		sdl_rect.y = cat.y;
 		SDL_BlitSurface(image_cat, 0, screen, &sdl_rect);
@@ -116,14 +120,14 @@ int main(int argc, char* argv[]) {
 
 		if(state == STATE_MAIN_MENU) {
 			// draw the main menu
-			sdl_rect.x = screen->w/2-73;
+			sdl_rect.x = SCREEN_WIDTH/2-73;
 			sdl_rect.h = 18;
 			sdl_rect.y = 175 + menu_state * 20;
 			sdl_rect.w = 146;
 			SDL_FillRect(screen,&sdl_rect,SDL_MapRGB(screen->format,204,133,0));
-			Font_DrawString(screen, screen->w/2-16, 180, "Play");
-			Font_DrawString(screen, screen->w/2-68, 200, "Toggle Fullscreen");
-			Font_DrawString(screen, screen->w/2-16, 220, "Quit");
+			Font_DrawString(screen, SCREEN_WIDTH/2-16, 180, "Play");
+			Font_DrawString(screen, SCREEN_WIDTH/2-68, 200, "Toggle Fullscreen");
+			Font_DrawString(screen, SCREEN_WIDTH/2-16, 220, "Quit");
 		}
 		else
 		if(state == STATE_GAME) {
@@ -186,37 +190,33 @@ int main(int argc, char* argv[]) {
 			char score_s[50]; // TODO this could create a buffer overflow
 			sprintf(score_s, "SCORE: %d", score);
 			int length = strlen(score_s) + 1;
-			Font_DrawString(screen, screen->w - length * 8, 5, score_s);
+			Font_DrawString(screen, SCREEN_WIDTH - length * 8, 5, score_s);
 
 			// draw the time
 			sprintf(score_s, "TIME LEFT: %d", time_left);
 			length = strlen(score_s) + 1;
-			Font_DrawString(screen, screen->w - length * 8, 15, score_s);
+			Font_DrawString(screen, SCREEN_WIDTH - length * 8, 15, score_s);
 		}
 		else if(state == STATE_GAME_OVER) {
-			Font_DrawString(screen, screen->w/2-36, 150, "GAME OVER");
-			Font_DrawString(screen, screen->w/2-96, 200, "Press Return to continue");
+			Font_DrawString(screen, SCREEN_WIDTH/2-36, 150, "GAME OVER");
+			Font_DrawString(screen, SCREEN_WIDTH/2-96, 200, "Press Return to continue");
 
 			// draw the score
 			char score_s[50]; // TODO this could create a buffer overflow
 			sprintf(score_s, "Score: %d", score);
 			int length = strlen(score_s) + 1;
-			Font_DrawString(screen, screen->w /2  - length * 4, 180, score_s);
+			Font_DrawString(screen, SCREEN_WIDTH /2  - length * 4, 180, score_s);
 		}
 
 		// TODO draw the fps
-		/*
 		char fps_s[50]; // TODO this could create a buffer overflow
-		if(last_delta_time <= 0)
-			last_delta_time = 1;
-		printf("%d\n", last_delta_time);
-		sprintf(fps_s, "FPS: %ld", 1000000000 / last_delta_time);
+		sprintf(fps_s, "FPS: %i", CLOCKS_PER_SEC / (clock() - last_fps_count_time));
+		last_fps_count_time = clock();
 		int length = strlen(fps_s) + 1;
-		Font_DrawString(screen, screen->w - length * 8, 24, fps_s);
-		*/
+		Font_DrawString(screen, SCREEN_WIDTH - length * 8, 24, fps_s);
 
 		//Font_DrawString(screen, 0,5, "ABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcdefghijklmnopqrstufwxyz\n 01234567890: +");
-		Font_DrawString(screen, screen->h-10, 5, "");
+		Font_DrawString(screen, SCREEN_HEIGHT-10, 5, "");
 
 		// draw the screen
 		SDL_Flip(screen);
@@ -225,15 +225,20 @@ int main(int argc, char* argv[]) {
 		deltaTime = clock()-deltaTime;
 
 		// get the time in microseconds
-		deltaTime /= CLOCKS_PER_SEC/1000000;
-		last_delta_time = deltaTime;
+		if(deltaTime != 0) {
+			deltaTime /= (CLOCKS_PER_SEC / 1000);
 
-		// calculate the time until the next frame
-		deltaTime = TICK_SPEED * 1000 - deltaTime;
+			// calculate the time until the next frame
+			deltaTime = TICK_SPEED - deltaTime;
 
-		// if it is higher than 0, sleep
-		if(deltaTime > 0)
-			usleep(deltaTime);
+			// if it is higher than 0, sleep
+			if(deltaTime > 0) {
+				unsigned int time_from_sleep_return = clock() / (CLOCKS_PER_SEC / 1000);
+
+				while(deltaTime + time_from_sleep_return > (clock() / (CLOCKS_PER_SEC / 1000))) {
+				}
+			}
+		}
 		//deltaTime = TICK_SPEED - deltaTime;
 		///printf("%d\n", deltaTime);
 		// wait 50 milliseconds
@@ -261,8 +266,8 @@ void gameRoutine() {
 		cat.y+=cat.downwardForce;
 
 		// the cat has touched the floor
-		if(cat.y>screen->h-FLOOR_HEIGHT-CAT_HEIGHT) {
-			cat.y = screen->h-FLOOR_HEIGHT-CAT_HEIGHT;
+		if(cat.y>SCREEN_HEIGHT-FLOOR_HEIGHT-CAT_HEIGHT) {
+			cat.y = SCREEN_HEIGHT-FLOOR_HEIGHT-CAT_HEIGHT;
 			cat.jumping = false;
 			cat.downwardForce = 0;
 		}
@@ -299,7 +304,7 @@ void gameRoutine() {
 				state = STATE_GAME;
 			}
 			else
-			if(menu_state == 1) { // toogle fullscreen button
+			if(menu_state == 1) { // toggle fullscreen button
 				SDL_WM_ToggleFullScreen(screen);
 			}
 			else
@@ -328,7 +333,7 @@ void gameRoutine() {
 				bird[i].x+= 1;
 
 				// if the bird left the screen, reset it
-				if(bird[i].x > screen->w) {
+				if(bird[i].x > SCREEN_WIDTH) {
 					bird[i].type = BIRD_TYPE_NONE;
 				}
 				else {
@@ -343,7 +348,7 @@ void gameRoutine() {
 			} else if(bird[i].type == BIRD_TYPE_DEAD_PIDGIN) {
 				bird[i].y+= 2;
 
-				if(bird[i].y > screen->h-FLOOR_HEIGHT) {
+				if(bird[i].y > SCREEN_HEIGHT-FLOOR_HEIGHT) {
 					bird[i].type = BIRD_TYPE_NONE;
 				}
 
@@ -351,7 +356,7 @@ void gameRoutine() {
 				// there should be a 1 in 10 chance for a bird to spawn
 				if(getRandomInt(20) == 1) {
 					bird[i].x = -150 + getRandomInt(100);
-					bird[i].y = 10 + getRandomInt(screen->h - FLOOR_HEIGHT - 40);
+					bird[i].y = 10 + getRandomInt(SCREEN_HEIGHT - FLOOR_HEIGHT - 40);
 					bird[i].type = BIRD_TYPE_PIDGIN;
 				}
 			}

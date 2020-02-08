@@ -12,6 +12,7 @@
 #endif
 #include <stdbool.h>
 #include <unistd.h>
+#include <time.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
@@ -39,7 +40,7 @@
 #define STATE_GAME_OVER 3
 #define GAME_TIME 60
 
-#define TICK_SPEED 20
+#define TICK_SPEED 18
 #define TICKS_PER_SECOND 1000 / TICK_SPEED
 
 // cat and bird structures
