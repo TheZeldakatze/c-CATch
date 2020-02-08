@@ -40,7 +40,7 @@
 #define STATE_GAME_OVER 3
 #define GAME_TIME 60
 
-#define TICK_SPEED 18
+#define TICK_SPEED 20
 #define TICKS_PER_SECOND 1000 / TICK_SPEED
 
 // cat and bird structures

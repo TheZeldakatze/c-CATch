@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
 	while(run) {
 
 		// get the time
-		long deltaTime = clock();
+		long deltaTime = SDL_GetTicks();
 
 		// process all sdl events
 		SDL_Event event;
@@ -208,10 +208,10 @@ int main(int argc, char* argv[]) {
 			Font_DrawString(screen, SCREEN_WIDTH /2  - length * 4, 180, score_s);
 		}
 
-		// TODO draw the fps
+		// draw the fps
 		char fps_s[50]; // TODO this could create a buffer overflow
-		sprintf(fps_s, "FPS: %i", CLOCKS_PER_SEC / (clock() - last_fps_count_time));
-		last_fps_count_time = clock();
+		sprintf(fps_s, "FPS: %i", 1000 / (SDL_GetTicks() - last_fps_count_time));
+		last_fps_count_time = SDL_GetTicks();
 		int length = strlen(fps_s) + 1;
 		Font_DrawString(screen, SCREEN_WIDTH - length * 8, 24, fps_s);
 
@@ -222,28 +222,23 @@ int main(int argc, char* argv[]) {
 		SDL_Flip(screen);
 
 		// get the delta time
-		deltaTime = clock()-deltaTime;
+		deltaTime = SDL_GetTicks()-deltaTime;
 
-		// get the time in microseconds
-		if(deltaTime != 0) {
-			deltaTime /= (CLOCKS_PER_SEC / 1000);
+		// calculate the time until the next frame
+		deltaTime = TICK_SPEED - deltaTime;
 
-			// calculate the time until the next frame
-			deltaTime = TICK_SPEED - deltaTime;
+		// if it is higher than 0, sleep
+		if(deltaTime > 0) {
+				unsigned int time_from_sleep_return = SDL_GetTicks();
 
-			// if it is higher than 0, sleep
-			if(deltaTime > 0) {
-				unsigned int time_from_sleep_return = clock() / (CLOCKS_PER_SEC / 1000);
+				while(deltaTime + time_from_sleep_return > SDL_GetTicks()) {
 
-				while(deltaTime + time_from_sleep_return > (clock() / (CLOCKS_PER_SEC / 1000))) {
+					// try to sleep for the left time
+					unsigned int time = (deltaTime + time_from_sleep_return-SDL_GetTicks()) * 1000;
+					if(time > 0)
+						usleep(time);
 				}
-			}
 		}
-		//deltaTime = TICK_SPEED - deltaTime;
-		///printf("%d\n", deltaTime);
-		// wait 50 milliseconds
-
-
 	}
 
 	// dispose the surfaces
