@@ -22,9 +22,13 @@ After that you can start it by running
 
 `./c-CATch`
 
+Or, if you want to start the game in fullscreen mode
+
+`./c-CATch -fs`
+
 ## Controls
 * Up / Down Arrows -    Change Menu Entry
 * Return           -    Select Menu Entry
-* F                -    Toggle Fullscreen
+* F                -    Toggle Fullscreen (Only supported with X11)
 * Space            - Press to charge jump
 * ESCape           -   Closes the program
