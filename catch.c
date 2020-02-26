@@ -23,7 +23,7 @@ unsigned int state, menu_state, score;
 int ticks_to_next_second, time_left;
 unsigned long last_fps_count_time;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 	memset(keyPressed,0,sizeof(keyPressed));
 	srand(435334);
 
@@ -34,8 +34,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	// create a window
-	if(argc>0)
-		screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF/* | SDL_FULLSCREEN*/);
+	if(argc>1 && strcmp(argv[1], "-fs") == 0)
+		screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF | SDL_FULLSCREEN);
 	else
 		screen = SDL_SetVideoMode(640, 480, 8, SDL_DOUBLEBUF);
 
