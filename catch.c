@@ -14,10 +14,15 @@ SDL_Rect sdl_rect, sdl_rect2;
 bool keyPressed[SDLK_LAST];
 
 // the images
-SDL_Surface* image_chargebar, *image_chargebar_dark, *image_cat, *image_bird;
+SDL_Surface* image_chargebar, *image_chargebar_dark, *image_cat, *image_bird, *image_clouds[1];
+
+#ifndef PLASTIC_TEXTURES
+SDL_Surface* image_grass;
+#endif
 
 struct Cat cat;
 struct Bird bird[BIRD_COUNT];
+struct Cloud clouds[CLOUD_COUNT];
 
 unsigned int state, menu_state, score;
 int ticks_to_next_second, time_left;
@@ -57,7 +62,22 @@ int main(int argc, char *argv[]) {
 	image_chargebar_dark = SDL_LoadBMP_RW(rwops,1);
 	rwops = SDL_RWFromConstMem(cat_bmp, sizeof(cat_bmp) / sizeof(char));
 	image_cat = SDL_LoadBMP_RW(rwops,1);
+	rwops = SDL_RWFromConstMem(cloud1_bmp, sizeof(cloud1_bmp) / sizeof(char));
+	image_clouds[0] = SDL_LoadBMP_RW(rwops,1);
 	SDL_SetColorKey(image_cat, SDL_SRCCOLORKEY, SDL_MapRGB(image_cat->format, 255, 0, 255));
+	SDL_SetColorKey(image_clouds[0], SDL_SRCCOLORKEY, SDL_MapRGB(image_clouds[0]->format, 255, 0, 255));
+
+	// load the "realistic" textures
+	#ifndef PLASTIC_TEXTURES
+	rwops = SDL_RWFromConstMem(grass_bmp, sizeof(grass_bmp) / sizeof(char));
+	image_grass = SDL_LoadBMP_RW(rwops,1);
+
+	#endif
+
+	// initialize the clouds
+	for(int i = 0; i<CLOUD_COUNT; i++) {
+		clouds[i].type = -1;
+	}
 
 	// set the correct physics flags for the cat
 	cat.jumping = true;
@@ -104,12 +124,34 @@ int main(int argc, char *argv[]) {
 		sdl_rect.y = 0;
 		sdl_rect.w = SCREEN_WIDTH;
 		sdl_rect.h = SCREEN_HEIGHT-FLOOR_HEIGHT;
+		#ifdef PLASTIC_TEXTURES
 		SDL_FillRect(screen,&sdl_rect,SDL_MapRGB(screen->format,0,0,200));
+		#else
+		SDL_FillRect(screen,&sdl_rect,SDL_MapRGB(screen->format,0,165,219));
+		#endif
 
 		// draw the floor
+		#ifdef PLASTIC_TEXTURES
 		sdl_rect.y = sdl_rect.h;
 		sdl_rect.h = FLOOR_HEIGHT;
 		SDL_FillRect(screen,&sdl_rect,SDL_MapRGB(screen->format,0,200,000));
+		#else
+		sdl_rect.y = sdl_rect.h;
+		sdl_rect.h = FLOOR_HEIGHT;
+
+		for(sdl_rect.x = 0; sdl_rect.x < SCREEN_WIDTH; sdl_rect.x += GRASS_TEXTURE_WIDTH) {
+			SDL_BlitSurface(image_grass, 0, screen, &sdl_rect);
+		}
+		#endif
+
+		// draw the clouds
+		for(int i = 0; i<CLOUD_COUNT; i++) {
+			if(clouds[i].type != -1) {
+				sdl_rect.x = clouds[i].x;
+				sdl_rect.y = clouds[i].y;
+				SDL_BlitSurface(image_clouds[clouds[i].type], 0, screen, &sdl_rect);
+			}
+		}
 
 		// draw the cat
 		cat.x = SCREEN_WIDTH/2 - image_cat->w/2;
@@ -210,7 +252,7 @@ int main(int argc, char *argv[]) {
 
 		// draw the fps
 		char fps_s[50]; // TODO this could create a buffer overflow
-		sprintf(fps_s, "FPS: %i", 1000 / (SDL_GetTicks() - last_fps_count_time));
+		sprintf(fps_s, "FPS: %lu", 1000 / (SDL_GetTicks() - last_fps_count_time));
 		last_fps_count_time = SDL_GetTicks();
 		int length = strlen(fps_s) + 1;
 		Font_DrawString(screen, SCREEN_WIDTH - length * 8, 24, fps_s);
@@ -254,6 +296,19 @@ int main(int argc, char *argv[]) {
 
 void gameRoutine() {
 	bool charge = keyPressed[SDLK_SPACE] && (state == STATE_GAME);
+
+	// update the clouds
+	static int cloudSpawnDelay = 0;
+	cloudSpawnDelay--;
+	for(int i = 0; i<CLOUD_COUNT; i++) {
+		clouds[i].x++;
+		if(cloudSpawnDelay < 0 && (clouds[i].x>SCREEN_WIDTH | clouds[i].type == -1)) {
+			cloudSpawnDelay = 64;
+			clouds[i].type = 0;
+			clouds[i].x = (-getRandomInt(100))-32;
+			clouds[i].y = getRandomInt(200);
+		}
+	}
 
 	// do the physics calculation
 	if(cat.jumping) {

@@ -19,6 +19,8 @@
 
 #include "chargebar.h"
 #include "cat_bmp.h"
+#include "grass_bmp.h"
+#include "cloud1_bmp.h"
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -31,6 +33,7 @@
 #define MAXIMUM_JUMP_FORCE 9
 
 #define BIRD_COUNT 5
+#define CLOUD_COUNT 14
 #define BIRD_TYPE_NONE 0
 #define BIRD_TYPE_PIDGIN 1
 #define BIRD_TYPE_DEAD_PIDGIN 2
@@ -42,6 +45,12 @@
 
 #define TICK_SPEED 20
 #define TICKS_PER_SECOND 1000 / TICK_SPEED
+
+#undef PLASTIC_TEXTURES
+
+struct Cloud {
+	int x, y, type;
+};
 
 // cat and bird structures
 struct Cat {
